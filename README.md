@@ -26,13 +26,13 @@ struct weather {
   * @param dest Destination memory block.
   * @param src Source structure.
   * @return The length of the null-terminated string in dest. */
-int weather_to_json( char* dest, struct weather const* src ) {
-    char* p = dest;                       // p always points to the null character
-    p = json_objOpen( p, NULL );          // --> {\0
-    p = json_int( p, "temp", src->temp ); // --> {"temp":22,\0
-    p = json_int( p, "hum", src->hum );   // --> {"temp":22,"hum":45,\0
-    p = json_objClose( p );               // --> {"temp":22,"hum":45},\0
-    p = json_end( p );                    // --> {"temp":22,"hum":45}\0
+int weather_to_json( char* dest, struct weather const* src, size_t* remLen ) {
+    char* p = dest;                               // p always points to the null character
+    p = json_objOpen( p, NULL, remLen );          // --> {\0
+    p = json_int( p, "temp", src->temp, remLen ); // --> {"temp":22,\0
+    p = json_int( p, "hum", src->hum, remLen );   // --> {"temp":22,"hum":45,\0
+    p = json_objClose( p, remLen );               // --> {"temp":22,"hum":45},\0
+    p = json_end( p, remLen );                    // --> {"temp":22,"hum":45}\0
     return p - dest;       
 }
     
@@ -51,12 +51,12 @@ struct weather {
 
 /* Add a time object property in a JSON string.
   "name":{"temp":-5,"hum":48}, */
-char* json_weather( char* dest, char const* name, struct weather const* weather ) {
+char* json_weather( char* dest, char const* name, struct weather const* weather, size_t* remLen ) {
     // dest always points to the null character
-    dest = json_objOpen( dest, name );              // --> "name":{\0
-    dest = json_int( dest, "temp", weather->temp ); // --> "name":{"temp":22,\0
-    dest = json_int( dest, "hum", weather->hum );   // --> "name":{"temp":22,"hum":45,\0
-    dest = json_objClose( dest );                   // --> "name":{"temp":22,"hum":45},\0
+    dest = json_objOpen( dest, name, remLen );              // --> "name":{\0
+    dest = json_int( dest, "temp", weather->temp, remLen ); // --> "name":{"temp":22,\0
+    dest = json_int( dest, "hum", weather->hum, remLen );   // --> "name":{"temp":22,"hum":45,\0
+    dest = json_objClose( dest, remLen );                   // --> "name":{"temp":22,"hum":45},\0
     return dest;
 }
 
@@ -67,11 +67,11 @@ struct time {
 
 /* Add a time object property in a JSON string.
   "name":{"hour":18,"minute":32}, */
-char* json_time( char* dest, char const* name, struct time const* time ) {
-    dest = json_objOpen( dest, name );
-    dest = json_int( dest, "hour",   time->hour   );
-    dest = json_int( dest, "minute", time->minute );
-    dest = json_objClose( dest );
+char* json_time( char* dest, char const* name, struct time const* time, size_t* remLen ) {
+    dest = json_objOpen( dest, name, remLen );
+    dest = json_int( dest, "hour",   time->hour, remLen   );
+    dest = json_int( dest, "minute", time->minute, remLen );
+    dest = json_objClose( dest, remLen );
     return dest;
 }
 
@@ -85,12 +85,12 @@ struct measure {
   * @param dest Destination memory block.
   * @param src Source structure.
   * @return The length of the null-terminated string in dest. */
-int measure_to_json( char* dest, struct measure const* measure ) {
-    char* p = json_objOpen( dest, NULL );
-    p = json_weather( p, "weather", &measure->weather );
-    p = json_time( p, "time", &measure->time );
-    p = json_objClose( p );
-    p = json_end( p );
+int measure_to_json( char* dest, struct measure const* measure, size_t* remLen ) {
+    char* p = json_objOpen( dest, NULL, remLen );
+    p = json_weather( p, "weather", &measure->weather, remLen );
+    p = json_time( p, "time", &measure->time, remLen );
+    p = json_objClose( p, remLen );
+    p = json_end( p, remLen );
     return p - dest;
 }
 
